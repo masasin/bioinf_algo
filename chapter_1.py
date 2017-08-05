@@ -135,6 +135,20 @@ def start_positions(string, pattern):
     return [m.start() for m in re.finditer(pattern, string, overlapped=True)]
 
 
+def clumping_naive(string, kmer_length, clump_size, min_freq):
+    '''
+    >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
+    >>> clumping_naive(string, 4, 25, 3)
+    {'TGCA'}
+
+    '''
+    result = set()
+    for substring in window(string, clump_size):
+        for kmer in frequent_kmers(substring, kmer_length, min_freq):
+            result.add(kmer)
+    return result
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
