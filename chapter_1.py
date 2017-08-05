@@ -25,6 +25,8 @@ def frequent_words(string, kmer_length):
     >>> kmer_length = 4
     >>> sorted(frequent_words(string, kmer_length))
     ['CATG', 'GCAT']
+    >>> frequent_words('GCGAT', 3)
+    []
 
     '''
     pattern = fr'(.{{{kmer_length}}}).*\1'
@@ -35,7 +37,10 @@ def frequent_words(string, kmer_length):
     for k, v in kmers.items():
         counts[v].append(k)
 
-    return counts[max(counts)]
+    try:
+        return counts[max(counts)]
+    except ValueError:
+        return []
 
 
 def pattern_to_number(pattern):
