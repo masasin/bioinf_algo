@@ -149,6 +149,27 @@ def clumping_naive(string, kmer_length, clump_size, min_freq):
     return patterns
 
 
+def clumping(string, kmer_length, clump_size, min_freq):
+    '''
+    >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
+    >>> clumping_naive(string, 4, 25, 3)
+    {'TGCA'}
+
+    '''
+    freqs = dict_frequencies(string[:window_size], kmer_length)
+    patterns = {k for k, v in freqs.items() if v >= min_freq}
+    for substring in window(string, window_size+1):
+        first_pattern = substring[:kmer_length]
+        last_pattern = substring[-kmer_length:]
+
+        freqs[first_pattern] -= 1
+        freqs[last_pattern] += 1
+
+        if freqs[last_pattern] >= min_freq:
+            patterns.add(last_pattern)
+    return patterns
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
