@@ -107,14 +107,14 @@ def computing_frequencies(string, n_bases):
 def dict_frequencies(string, n_bases):
     '''
     >>> string = 'GATTACA'
-    >>> sorted(dict_frequencies(string, 2).items())
+    >>> sorted(dict(dict_frequencies(string, 2)).items())
     [('AC', 1), ('AT', 1), ('CA', 1), ('GA', 1), ('TA', 1), ('TT', 1)]
 
     '''
     frequencies = defaultdict(int)
     for substring in window(string, n_bases):
         frequencies[substring] += 1
-    return dict(frequencies)
+    return frequencies
 
 
 def reverse_complement(string):
