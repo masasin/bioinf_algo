@@ -19,13 +19,13 @@ def pattern_count(string, pattern):
     return len(re.findall(pattern, string, overlapped=True))
 
 
-def frequent_words(string, kmer_length):
+def frequent_kmers(string, kmer_length):
     '''
     >>> string = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> kmer_length = 4
-    >>> sorted(frequent_words(string, kmer_length))
+    >>> sorted(frequent_kmers(string, kmer_length))
     ['CATG', 'GCAT']
-    >>> frequent_words('GCGAT', 3)
+    >>> frequent_kmers('GCGAT', 3)
     []
 
     '''
