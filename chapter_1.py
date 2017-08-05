@@ -26,7 +26,7 @@ def kmer_counts(string, kmer_length):
 
     counts = defaultdict(list)
     for k, v in kmers.items():
-        counts[v].append(k)
+        counts[v+1].append(k)
     return counts
 
 
