@@ -59,12 +59,12 @@ def number_to_pattern(number, n_bases=0):
     return f'{DNA_BASE4.encode(number):A>{n_bases}}'
 
 
-def substrings(string, n_bases):
+def window(string, n_bases):
     '''
     >>> string = 'GCGCG'
-    >>> list(substrings(string, 2))
+    >>> list(window(string, 2))
     ['GC', 'CG', 'GC', 'CG']
-    >>> list(substrings(string, 3))
+    >>> list(window(string, 3))
     ['GCG', 'CGC', 'GCG']
 
     '''
@@ -80,7 +80,7 @@ def computing_frequencies(string, n_bases):
 
     '''
     frequencies = [0] * (4**n_bases)
-    for substring in substrings(string, n_bases):
+    for substring in window(string, n_bases):
         frequencies[pattern_to_number(substring)] += 1
     return frequencies
 
@@ -93,7 +93,7 @@ def dict_frequencies(string, n_bases):
 
     '''
     frequencies = defaultdict(int)
-    for substring in substrings(string, n_bases):
+    for substring in window(string, n_bases):
         frequencies[substring] += 1
     return dict(frequencies)
 
