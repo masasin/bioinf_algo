@@ -152,7 +152,7 @@ def clumping_naive(string, kmer_length, window_size, min_freq):
 def clumping(string, kmer_length, window_size, min_freq):
     '''
     >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
-    >>> clumping_naive(string, 4, 25, 3)
+    >>> clumping(string, 4, 25, 3)
     {'TGCA'}
 
     '''
