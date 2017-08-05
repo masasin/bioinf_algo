@@ -108,6 +108,16 @@ def reverse_complement(string):
     return string.translate(COMPLEMENTS)[::-1]
 
 
+def start_positions(string, pattern):
+    '''
+    >>> start_positions('GATATATGCATATACTT', 'ATAT')
+    [1, 3, 9]
+
+    '''
+    return [match.start()
+            for match in re.finditer(pattern, string, overlapped=True)]
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
