@@ -135,7 +135,7 @@ def start_positions(string, pattern):
     return [m.start() for m in re.finditer(pattern, string, overlapped=True)]
 
 
-def clumping_naive(string, kmer_length, clump_size, min_freq):
+def clumping_naive(string, kmer_length, window_size, min_freq):
     '''
     >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
     >>> clumping_naive(string, 4, 25, 3)
@@ -143,13 +143,13 @@ def clumping_naive(string, kmer_length, clump_size, min_freq):
 
     '''
     patterns = set()
-    for substring in window(string, clump_size):
+    for substring in window(string, window_size):
         for kmer in frequent_kmers(substring, kmer_length, min_freq):
             patterns.add(kmer)
     return patterns
 
 
-def clumping(string, kmer_length, clump_size, min_freq):
+def clumping(string, kmer_length, window_size, min_freq):
     '''
     >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
     >>> clumping_naive(string, 4, 25, 3)
