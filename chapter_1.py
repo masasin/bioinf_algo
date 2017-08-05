@@ -1,4 +1,5 @@
 from collections import Counter, defaultdict
+import itertools as it
 
 import baseconv
 import regex as re
@@ -30,22 +31,29 @@ def kmer_counts(string, kmer_length):
     return counts
 
 
-def frequent_kmers(string, kmer_length):
+def frequent_kmers(string, kmer_length, min_freq=None):
     '''
     >>> string = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> kmer_length = 4
     >>> sorted(frequent_kmers(string, kmer_length))
     ['CATG', 'GCAT']
+    >>> sorted(frequent_kmers(string, kmer_length, min_freq=2))
+    ['ATGA', 'CATG', 'GCAT', 'TGCA']
     >>> frequent_kmers('GCGAT', 3)
     []
 
     '''
     counts = kmer_counts(string, kmer_length)
 
-    try:
-        return counts[max(counts)]
-    except ValueError:
+    if not counts:
         return []
+    elif min_freq is None:
+        return counts[max(counts)]
+    else:
+        return list(it.chain.from_iterable(
+            [counts[i]
+             for i in it.takewhile(lambda i: i >= min_freq,
+                                   sorted(counts.keys(), reverse=True))]))
 
 
 def pattern_to_number(pattern):
