@@ -142,11 +142,11 @@ def clumping_naive(string, kmer_length, clump_size, min_freq):
     {'TGCA'}
 
     '''
-    result = set()
+    patterns = set()
     for substring in window(string, clump_size):
         for kmer in frequent_kmers(substring, kmer_length, min_freq):
-            result.add(kmer)
-    return result
+            patterns.add(kmer)
+    return patterns
 
 
 if __name__ == '__main__':
