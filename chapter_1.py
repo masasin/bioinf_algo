@@ -132,8 +132,7 @@ def start_positions(string, pattern):
     [1, 3, 9]
 
     '''
-    return [match.start()
-            for match in re.finditer(pattern, string, overlapped=True)]
+    return [m.start() for m in re.finditer(pattern, string, overlapped=True)]
 
 
 if __name__ == '__main__':
