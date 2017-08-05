@@ -19,6 +19,17 @@ def pattern_count(string, pattern):
     return len(re.findall(pattern, string, overlapped=True))
 
 
+def kmer_counts(string, kmer_length):
+    pattern = fr'(.{{{kmer_length}}}).*\1'
+    repeaters = re.findall(pattern, string, overlapped=True)
+    kmers = Counter(repeaters)
+
+    counts = defaultdict(list)
+    for k, v in kmers.items():
+        counts[v].append(k)
+    return counts
+
+
 def frequent_kmers(string, kmer_length):
     '''
     >>> string = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
@@ -29,13 +40,7 @@ def frequent_kmers(string, kmer_length):
     []
 
     '''
-    pattern = fr'(.{{{kmer_length}}}).*\1'
-    repeaters = re.findall(pattern, string, overlapped=True)
-    kmers = Counter(repeaters)
-
-    counts = defaultdict(list)
-    for k, v in kmers.items():
-        counts[v].append(k)
+    counts = kmer_counts(string, kmer_length)
 
     try:
         return counts[max(counts)]
