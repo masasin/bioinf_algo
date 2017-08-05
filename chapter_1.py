@@ -5,6 +5,7 @@ import regex as re
 
 
 DNA_BASE4 = baseconv.BaseConverter('ACGT')
+COMPLEMENTS = str.maketrans('ACGT', 'TGCA')
 
 
 def pattern_count(string, pattern):
@@ -96,6 +97,15 @@ def dict_frequencies(string, n_bases):
     for substring in window(string, n_bases):
         frequencies[substring] += 1
     return dict(frequencies)
+
+
+def reverse_complement(string):
+    '''
+    >>> reverse_complement('AAAACCCGGT')
+    'ACCGGGTTTT'
+
+    '''
+    return string.translate(COMPLEMENTS)[::-1]
 
 
 if __name__ == '__main__':
