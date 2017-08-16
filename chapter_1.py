@@ -1,4 +1,5 @@
 from collections import Counter, defaultdict
+from functools import lru_cache
 import itertools as it
 
 import baseconv
@@ -198,6 +199,7 @@ def min_skew(genome):
     yield from (i for i, v in enumerate(skew_list) if v == minimum)
 
 
+@lru_cache()
 def hamming_distance(s1, s2):
     '''
     >>> s1 = 'GGGCCGTTGGT'
