@@ -225,6 +225,18 @@ def start_positions_approx(genome, pattern, dist_max, method=hamming_distance):
             yield i
 
 
+def pattern_count_approx(genome, pattern, dist_max, method=hamming_distance):
+    '''
+    >>> pattern_count_approx('AACAAGCTGATAAACATTTAAAGAG', 'AAAAA', 1)
+    4
+    >>> pattern_count_approx('AACAAGCTGATAAACATTTAAAGAG', 'AAAAA', 2)
+    11
+
+    '''
+    return sum(method(pattern, substring) <= dist_max
+               for substring in window(genome, len(pattern)))
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
