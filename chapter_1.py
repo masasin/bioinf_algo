@@ -95,10 +95,10 @@ def window(genome, n_bases):
         yield genome[i:i + n_bases]
 
 
-def computing_frequencies(genome, n_bases):
+def list_frequencies(genome, n_bases):
     '''
     >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
-    >>> computing_frequencies(genome, 2)
+    >>> list_frequencies(genome, 2)
     [0, 1, 2, 4, 3, 0, 2, 1, 3, 4, 0, 2, 0, 1, 5, 1]
 
     '''
