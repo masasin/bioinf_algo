@@ -9,20 +9,20 @@ DNA_BASE4 = baseconv.BaseConverter('ACGT')
 COMPLEMENTS = str.maketrans('ACGT', 'TGCA')
 
 
-def pattern_count(string, pattern):
+def pattern_count(genome, pattern):
     '''
-    >>> string = 'GCGCG'
+    >>> genome = 'GCGCG'
     >>> pattern = 'GCG'
-    >>> pattern_count(string, pattern)
+    >>> pattern_count(genome, pattern)
     2
 
     '''
-    return len(re.findall(pattern, string, overlapped=True))
+    return len(re.findall(pattern, genome, overlapped=True))
 
 
-def kmer_counts(string, kmer_length):
+def kmer_counts(genome, kmer_length):
     pattern = fr'(.{{{kmer_length}}}).*\1'
-    repeaters = re.findall(pattern, string, overlapped=True)
+    repeaters = re.findall(pattern, genome, overlapped=True)
     kmers = Counter(repeaters)
 
     counts = defaultdict(list)
@@ -31,19 +31,19 @@ def kmer_counts(string, kmer_length):
     return counts
 
 
-def frequent_kmers(string, kmer_length, min_freq=None):
+def frequent_kmers(genome, kmer_length, min_freq=None):
     '''
-    >>> string = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
+    >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> kmer_length = 4
-    >>> sorted(frequent_kmers(string, kmer_length))
+    >>> sorted(frequent_kmers(genome, kmer_length))
     ['CATG', 'GCAT']
-    >>> sorted(frequent_kmers(string, kmer_length, min_freq=2))
+    >>> sorted(frequent_kmers(genome, kmer_length, min_freq=2))
     ['ATGA', 'CATG', 'GCAT', 'TGCA']
     >>> frequent_kmers('GCGAT', 3)
     []
 
     '''
-    counts = kmer_counts(string, kmer_length)
+    counts = kmer_counts(genome, kmer_length)
 
     if not counts:
         return []
@@ -78,87 +78,87 @@ def number_to_pattern(number, n_bases=0):
     return f'{DNA_BASE4.encode(number):A>{n_bases}}'
 
 
-def window(string, n_bases):
+def window(genome, n_bases):
     '''
-    >>> string = 'GCGCG'
-    >>> list(window(string, 2))
+    >>> genome = 'GCGCG'
+    >>> list(window(genome, 2))
     ['GC', 'CG', 'GC', 'CG']
-    >>> list(window(string, 3))
+    >>> list(window(genome, 3))
     ['GCG', 'CGC', 'GCG']
 
     '''
-    for i in range(len(string) - n_bases + 1):
-        yield string[i:i + n_bases]
+    for i in range(len(genome) - n_bases + 1):
+        yield genome[i:i + n_bases]
 
 
-def computing_frequencies(string, n_bases):
+def computing_frequencies(genome, n_bases):
     '''
-    >>> string = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
-    >>> computing_frequencies(string, 2)
+    >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
+    >>> computing_frequencies(genome, 2)
     [0, 1, 2, 4, 3, 0, 2, 1, 3, 4, 0, 2, 0, 1, 5, 1]
 
     '''
     frequencies = [0] * (4**n_bases)
-    for substring in window(string, n_bases):
+    for substring in window(genome, n_bases):
         frequencies[pattern_to_number(substring)] += 1
     return frequencies
 
 
-def dict_frequencies(string, n_bases):
+def dict_frequencies(genome, n_bases):
     '''
-    >>> string = 'GATTACA'
-    >>> sorted(dict(dict_frequencies(string, 2)).items())
+    >>> genome = 'GATTACA'
+    >>> sorted(dict(dict_frequencies(genome, 2)).items())
     [('AC', 1), ('AT', 1), ('CA', 1), ('GA', 1), ('TA', 1), ('TT', 1)]
 
     '''
     frequencies = defaultdict(int)
-    for substring in window(string, n_bases):
+    for substring in window(genome, n_bases):
         frequencies[substring] += 1
     return frequencies
 
 
-def reverse_complement(string):
+def reverse_complement(genome):
     '''
     >>> reverse_complement('AAAACCCGGT')
     'ACCGGGTTTT'
 
     '''
-    return string.translate(COMPLEMENTS)[::-1]
+    return genome.translate(COMPLEMENTS)[::-1]
 
 
-def start_positions(string, pattern):
+def start_positions(genome, pattern):
     '''
     >>> start_positions('GATATATGCATATACTT', 'ATAT')
     [1, 3, 9]
 
     '''
-    return [m.start() for m in re.finditer(pattern, string, overlapped=True)]
+    return [m.start() for m in re.finditer(pattern, genome, overlapped=True)]
 
 
-def clumping_naive(string, kmer_length, window_size, min_freq):
+def clumping_naive(genome, kmer_length, window_size, min_freq):
     '''
-    >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
-    >>> clumping_naive(string, 4, 25, 3)
+    >>> genome = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
+    >>> clumping_naive(genome, 4, 25, 3)
     {'TGCA'}
 
     '''
     patterns = set()
-    for substring in window(string, window_size):
+    for substring in window(genome, window_size):
         for kmer in frequent_kmers(substring, kmer_length, min_freq):
             patterns.add(kmer)
     return patterns
 
 
-def clumping(string, kmer_length, window_size, min_freq):
+def clumping(genome, kmer_length, window_size, min_freq):
     '''
-    >>> string = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
-    >>> clumping(string, 4, 25, 3)
+    >>> genome = 'GATCAGCATAAGGGTCCCTGCAATGCATGACAAGCCTGCAGTTGTTTTAC'
+    >>> clumping(genome, 4, 25, 3)
     {'TGCA'}
 
     '''
-    freqs = dict_frequencies(string[:window_size], kmer_length)
+    freqs = dict_frequencies(genome[:window_size], kmer_length)
     patterns = {k for k, v in freqs.items() if v >= min_freq}
-    for substring in window(string, window_size+1):
+    for substring in window(genome, window_size+1):
         first_pattern = substring[:kmer_length]
         last_pattern = substring[-kmer_length:]
 
