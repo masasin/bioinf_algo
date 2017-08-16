@@ -189,19 +189,13 @@ def skew(genome):
 def min_skew(genome):
     '''
     >>> genome = 'TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT'
-    >>> list(min_skew_3(genome))
+    >>> list(min_skew(genome))
     [11, 24]
 
     '''
     skew_list = list(skew(genome))
     minimum = min(skew_list)
-    i = skew_list.index(minimum)
-    while True:
-        yield i
-        try:
-            i = skew_list.index(minimum, i + 1)
-        except ValueError:
-            return
+    yield from (i for i, v in enumerate(skew_list) if v == minimum)
 
 
 if __name__ == '__main__':
