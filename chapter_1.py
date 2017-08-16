@@ -23,13 +23,16 @@ def pattern_count(genome, pattern):
 
 
 def kmer_counts(genome, kmer_length):
-    pattern = fr'(.{{{kmer_length}}}).*\1'
-    repeaters = re.findall(pattern, genome, overlapped=True)
-    kmers = Counter(repeaters)
+    '''
+    >>> genome = 'GCGCG'
+    >>> sorted(dict(kmer_counts(genome, 2)).items())
+    [(2, ['GC', 'CG'])]
 
+    '''
+    freqs = dict_frequencies(genome, kmer_length)
     counts = defaultdict(list)
-    for k, v in kmers.items():
-        counts[v+1].append(k)
+    for k, v in freqs.items():
+        counts[v].append(k)
     return counts
 
 
@@ -47,7 +50,7 @@ def frequent_kmers(genome, kmer_length, min_freq=None):
     '''
     counts = kmer_counts(genome, kmer_length)
 
-    if not counts:
+    if max(counts) <= 1:
         return []
     elif min_freq is None:
         return counts[max(counts)]
