@@ -6,8 +6,9 @@ import baseconv
 import regex as re
 
 
-DNA_BASE4 = baseconv.BaseConverter('ACGT')
-COMPLEMENTS = str.maketrans('ACGT', 'TGCA')
+BASES = 'ACGT'
+DNA_BASE4 = baseconv.BaseConverter(BASES)
+COMPLEMENTS = str.maketrans(BASES, 'TGCA')
 
 
 def pattern_count(genome, pattern):
