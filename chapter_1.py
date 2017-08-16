@@ -128,11 +128,11 @@ def reverse_complement(genome):
 
 def start_positions(genome, pattern):
     '''
-    >>> start_positions('GATATATGCATATACTT', 'ATAT')
+    >>> list(start_positions('GATATATGCATATACTT', 'ATAT'))
     [1, 3, 9]
 
     '''
-    return [m.start() for m in re.finditer(pattern, genome, overlapped=True)]
+    yield from (m.start() for m in re.finditer(pattern, genome, overlapped=True))
 
 
 def clumping_naive(genome, kmer_length, window_size, min_freq):
