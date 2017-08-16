@@ -170,6 +170,40 @@ def clumping(genome, kmer_length, window_size, min_freq):
     return patterns
 
 
+def skew(genome):
+    '''
+    >>> list(skew('CATGGGCATCGGCCATACGCC'))
+    [0, -1, -1, -1, 0, 1, 2, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0, 0, -1, 0, -1, -2]
+
+    '''
+    diff = 0
+    yield diff
+    for base in genome:
+        if base == 'C':
+            diff -= 1
+        elif base == 'G':
+            diff += 1
+        yield diff
+
+
+def min_skew(genome):
+    '''
+    >>> genome = 'TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT'
+    >>> list(min_skew_3(genome))
+    [11, 24]
+
+    '''
+    skew_list = list(skew(genome))
+    minimum = min(skew_list)
+    i = skew_list.index(minimum)
+    while True:
+        yield i
+        try:
+            i = skew_list.index(minimum, i + 1)
+        except ValueError:
+            return
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
