@@ -282,6 +282,76 @@ def neighbors_iterative(pattern, dist_max, method=hamming_distance):
     return neighborhood
 
 
+def list_frequencies_approx(genome, n_bases, dist_max, method=hamming_distance):
+    '''
+    >>> genome = 'AAGCAAAGGTGGG'
+    >>> list_frequencies_approx(genome, 2, 1)
+    [6, 6, 9, 6, 4, 2, 7, 2, 9, 5, 8, 5, 5, 2, 6, 2]
+
+    '''
+    frequencies = [0] * (4**n_bases)
+    for substring in window(genome, n_bases):
+        for neighbor in neighbors(substring, dist_max, method):
+            frequencies[pattern_to_number(neighbor)] += 1
+    return frequencies
+
+
+def dict_frequencies_approx(genome, n_bases, dist_max, method=hamming_distance):
+    '''
+    >>> genome = 'GATTACA'
+    >>> sorted(dict(dict_frequencies_approx(genome, 2, 1)).items())
+    [('AA', 5), ('AC', 2), ('AG', 2), ('AT', 3), ('CA', 3), ('CC', 2), ('CG', 1), ('CT', 3), ('GA', 3), ('GC', 2), ('GG', 1), ('GT', 3), ('TA', 4), ('TC', 3), ('TG', 2), ('TT', 3)]
+
+    '''
+    frequencies = defaultdict(int)
+    for substring in window(genome, n_bases):
+        for neighbor in neighbors(substring, dist_max, method):
+            frequencies[neighbor] += 1
+    return frequencies
+
+
+def kmer_counts_approx(genome, kmer_length, dist_max, method=hamming_distance):
+    '''
+    >>> genome = 'GCGCG'
+    >>> counts = kmer_counts_approx(genome, 2, 1)
+    >>> sorted(counts) == [2, 4]
+    True
+    >>> sorted(sorted(v) for v in counts.values())
+    [['AC', 'AG', 'CA', 'CG', 'CT', 'GA', 'GC', 'GT', 'TC', 'TG'], ['CC', 'GG']]
+
+    '''
+    freqs = dict_frequencies_approx(genome, kmer_length, dist_max, method)
+    counts = defaultdict(list)
+    for k, v in freqs.items():
+        counts[v].append(k)
+    return counts
+
+
+def frequent_kmers_approx(genome, kmer_length, dist_max, min_freq=None,
+                          method=hamming_distance):
+    '''
+    >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
+    >>> kmer_length = 4
+    >>> sorted(frequent_kmers(genome, kmer_length))
+    ['CATG', 'GCAT']
+    >>> sorted(frequent_kmers(genome, kmer_length, min_freq=2))
+    ['ATGA', 'CATG', 'GCAT', 'TGCA']
+    >>> frequent_kmers('GCGAT', 3)
+    []
+
+    '''
+    counts = kmer_counts_approx(genome, kmer_length, dist_max, method)
+
+    if max(counts) <= 1:
+        return []
+    elif min_freq is None:
+        return counts[max(counts)]
+    else:
+        return list(it.chain.from_iterable([counts[i]
+            for i in it.takewhile(lambda i: i >= min_freq,
+                                  sorted(counts, reverse=True))]))
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
