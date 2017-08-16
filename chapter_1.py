@@ -238,6 +238,47 @@ def pattern_count_approx(genome, pattern, dist_max, method=hamming_distance):
                for substring in window(genome, len(pattern)))
 
 
+def neighbors(pattern, dist_max, method=hamming_distance):
+    '''
+    >>> sorted(neighbors('ACG', 1))
+    ['AAG', 'ACA', 'ACC', 'ACG', 'ACT', 'AGG', 'ATG', 'CCG', 'GCG', 'TCG']
+
+    '''
+    if dist_max == 0:
+        return set([pattern])
+    if len(pattern) == 1:
+        return set(BASES)
+
+    neighborhood = set()
+    head, tail = pattern[0], pattern[1:]
+    neighbors_tail = neighbors(tail, dist_max, method)
+
+    for neighbor in neighbors_tail:
+        if method(tail, neighbor) < dist_max:
+            neighborhood.update({base + neighbor for base in BASES})
+        else:
+            neighborhood.add(head + neighbor)
+    return neighborhood
+
+
+def neighbors_iterative(pattern, dist_max, method=hamming_distance):
+    '''
+    >>> sorted(neighbors_iterative('ACG', 1))
+    ['AAG', 'ACA', 'ACC', 'ACG', 'ACT', 'AGG', 'ATG', 'CCG', 'GCG', 'TCG']
+
+    '''
+    def immediate_neighbor(pattern):
+        return {pattern[:i] + base + pattern[i+1:]
+                for i in range(len(pattern))
+                for base in BASES}
+
+    neighborhood = set([pattern])
+    for dist in range(dist_max):
+        for neighbor in neighborhood.copy():
+            neighborhood.update(immediate_neighbor(neighbor))
+    return neighborhood
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
