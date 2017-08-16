@@ -211,6 +211,20 @@ def hamming_distance(s1, s2):
     return sum(l != r for l, r in zip(s1, s2))
 
 
+def start_positions_approx(genome, pattern, dist_max, method=hamming_distance):
+    '''
+    >>> genome = 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT'
+    >>> pattern = 'ATTCTGGA'
+    >>> distance = 3
+    >>> list(start_positions_approx(genome, pattern, distance))
+    [6, 7, 26, 27]
+
+    '''
+    for i, substring in enumerate(window(genome, len(pattern))):
+        if method(pattern, substring) <= dist_max:
+            yield i
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
