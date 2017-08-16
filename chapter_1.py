@@ -198,6 +198,17 @@ def min_skew(genome):
     yield from (i for i, v in enumerate(skew_list) if v == minimum)
 
 
+def hamming_distance(s1, s2):
+    '''
+    >>> s1 = 'GGGCCGTTGGT'
+    >>> s2 = 'GGACCGTTGAC'
+    >>> hamming_distance(s1, s2)
+    3
+
+    '''
+    return sum(l != r for l, r in zip(s1, s2))
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
