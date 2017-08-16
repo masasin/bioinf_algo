@@ -55,10 +55,9 @@ def frequent_kmers(genome, kmer_length, min_freq=None):
     elif min_freq is None:
         return counts[max(counts)]
     else:
-        return list(it.chain.from_iterable(
-            [counts[i]
-             for i in it.takewhile(lambda i: i >= min_freq,
-                                   sorted(counts.keys(), reverse=True))]))
+        return list(it.chain.from_iterable([counts[i]
+            for i in it.takewhile(lambda i: i >= min_freq,
+                                  sorted(counts, reverse=True))]))
 
 
 def pattern_to_number(pattern):
@@ -137,7 +136,8 @@ def start_positions(genome, pattern):
     [1, 3, 9]
 
     '''
-    yield from (m.start() for m in re.finditer(pattern, genome, overlapped=True))
+    yield from (m.start()
+                for m in re.finditer(pattern, genome, overlapped=True))
 
 
 def clumping_naive(genome, kmer_length, window_size, min_freq):
