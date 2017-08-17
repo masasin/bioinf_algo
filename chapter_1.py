@@ -3,7 +3,6 @@ from functools import lru_cache
 import itertools as it
 
 import baseconv
-import regex as re
 
 
 BASES = 'ACGT'
@@ -23,13 +22,36 @@ def hamming_distance(s1, s2):
     return sum(l != r for l, r in zip(s1, s2))
 
 
-def pattern_count(genome, pattern, dist_max=0, method=hamming_distance):
+def neighbors(pattern, dist_max, *, method=hamming_distance):
+    '''
+    >>> sorted(neighbors('ACG', 1))
+    ['AAG', 'ACA', 'ACC', 'ACG', 'ACT', 'AGG', 'ATG', 'CCG', 'GCG', 'TCG']
+
+    '''
+    if dist_max == 0:
+        return set([pattern])
+    if len(pattern) == 1:
+        return set(BASES)
+
+    neighborhood = set()
+    head, tail = pattern[0], pattern[1:]
+    neighbors_tail = neighbors(tail, dist_max, method=method)
+
+    for neighbor in neighbors_tail:
+        if method(tail, neighbor) < dist_max:
+            neighborhood.update({base + neighbor for base in BASES})
+        else:
+            neighborhood.add(head + neighbor)
+    return neighborhood
+
+
+def pattern_count(genome, pattern, *, dist_max=0, method=hamming_distance):
     '''
     >>> pattern_count('GCGCG', 'GCG')
     2
-    >>> pattern_count('AACAAGCTGATAAACATTTAAAGAG', 'AAAAA', 1)
+    >>> pattern_count('AACAAGCTGATAAACATTTAAAGAG', 'AAAAA', dist_max=1)
     4
-    >>> pattern_count('AACAAGCTGATAAACATTTAAAGAG', 'AAAAA', 2)
+    >>> pattern_count('AACAAGCTGATAAACATTTAAAGAG', 'AAAAA', dist_max=2)
     11
 
     '''
@@ -37,29 +59,29 @@ def pattern_count(genome, pattern, dist_max=0, method=hamming_distance):
                for substring in window(genome, len(pattern)))
 
 
-def kmer_counts(genome, kmer_length, dist_max=0, method=hamming_distance, reverse=False):
+def kmer_counts(genome, kmer_length, *, dist_max=0, method=hamming_distance, reverse=False):
     '''
     >>> genome = 'GCGCG'
     >>> sorted(dict(kmer_counts(genome, 2)).items())
     [(2, ['GC', 'CG'])]
-    >>> counts = kmer_counts(genome, 2, 1)
+    >>> counts = kmer_counts(genome, 2, dist_max=1)
     >>> sorted(counts) == [2, 4]
     True
     >>> sorted(sorted(v) for v in counts.values())
     [['AC', 'AG', 'CA', 'CG', 'CT', 'GA', 'GC', 'GT', 'TC', 'TG'], ['CC', 'GG']]
-    >>> counts = kmer_counts(genome, 2, 1, reverse=True)
+    >>> counts = kmer_counts(genome, 2, dist_max=1, reverse=True)
     >>> sorted(counts) == [4, 8]
     True
 
     '''
-    freqs = dict_frequencies(genome, kmer_length, dist_max, method, reverse)
+    freqs = dict_frequencies(genome, kmer_length, dist_max=dist_max, method=method, reverse=reverse)
     counts = defaultdict(list)
     for k, v in freqs.items():
         counts[v].append(k)
     return counts
 
 
-def frequent_kmers(genome, kmer_length, dist_max=0, min_freq=None, method=hamming_distance, reverse=False):
+def frequent_kmers(genome, kmer_length, *, dist_max=0, min_freq=None, method=hamming_distance, reverse=False):
     '''
     >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> kmer_length = 4
@@ -69,17 +91,17 @@ def frequent_kmers(genome, kmer_length, dist_max=0, min_freq=None, method=hammin
     ['ATGA', 'CATG', 'GCAT', 'TGCA']
     >>> sorted(frequent_kmers('GCGAT', 3))
     []
-    >>> sorted(frequent_kmers(genome, kmer_length, 1))
+    >>> sorted(frequent_kmers(genome, kmer_length, dist_max=1))
     ['ATGC', 'ATGT', 'GATG']
-    >>> sorted(frequent_kmers(genome, kmer_length, 1, min_freq=4))
+    >>> sorted(frequent_kmers(genome, kmer_length, dist_max=1, min_freq=4))
     ['AATG', 'ACAT', 'AGCA', 'ATGA', 'ATGC', 'ATGG', 'ATGT', 'CATG', 'CATT', 'CGTG', 'CTTG', 'GATG', 'GCGT', 'GGAT', 'TATG', 'TCAT', 'TGAA', 'TGCT']
-    >>> sorted(frequent_kmers('GCGAT', 4, 1))
+    >>> sorted(frequent_kmers('GCGAT', 4, dist_max=1))
     []
-    >>> sorted(frequent_kmers(genome, kmer_length, 1, reverse=True))
+    >>> sorted(frequent_kmers(genome, kmer_length, dist_max=1, reverse=True))
     ['ACAT', 'ATGT']
 
     '''
-    counts = kmer_counts(genome, kmer_length, dist_max, method, reverse)
+    counts = kmer_counts(genome, kmer_length, dist_max=dist_max, method=method, reverse=reverse)
 
     if max(counts) <= 1:
         return
@@ -126,37 +148,37 @@ def window(genome, n_bases):
         yield genome[i:i + n_bases]
 
 
-def list_frequencies(genome, n_bases, dist_max=0, method=hamming_distance):
+def list_frequencies(genome, n_bases, *, dist_max=0, method=hamming_distance):
     '''
     >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> list_frequencies(genome, 2)
     [0, 1, 2, 4, 3, 0, 2, 1, 3, 4, 0, 2, 0, 1, 5, 1]
     >>> genome = 'AAGCAAAGGTGGG'
-    >>> list_frequencies(genome, 2, 1)
+    >>> list_frequencies(genome, 2, dist_max=1)
     [6, 6, 9, 6, 4, 2, 7, 2, 9, 5, 8, 5, 5, 2, 6, 2]
 
     '''
     frequencies = [0] * (4**n_bases)
     for substring in window(genome, n_bases):
-        for neighbor in neighbors(substring, dist_max, method):
+        for neighbor in neighbors(substring, dist_max, method=method):
             frequencies[pattern_to_number(neighbor)] += 1
     return frequencies
 
 
-def dict_frequencies(genome, n_bases, dist_max=0, method=hamming_distance, reverse=False):
+def dict_frequencies(genome, n_bases, *, dist_max=0, method=hamming_distance, reverse=False):
     '''
     >>> genome = 'GATTACA'
     >>> sorted(dict(dict_frequencies(genome, 2)).items())
     [('AC', 1), ('AT', 1), ('CA', 1), ('GA', 1), ('TA', 1), ('TT', 1)]
-    >>> sorted(dict(dict_frequencies(genome, 2, 1)).items())
+    >>> sorted(dict(dict_frequencies(genome, 2, dist_max=1)).items())
     [('AA', 5), ('AC', 2), ('AG', 2), ('AT', 3), ('CA', 3), ('CC', 2), ('CG', 1), ('CT', 3), ('GA', 3), ('GC', 2), ('GG', 1), ('GT', 3), ('TA', 4), ('TC', 3), ('TG', 2), ('TT', 3)]
-    >>> sorted(dict(dict_frequencies(genome, 2, 1, reverse=True)).items())
+    >>> sorted(dict(dict_frequencies(genome, 2, dist_max=1, reverse=True)).items())
     [('AA', 8), ('AC', 5), ('AG', 5), ('AT', 6), ('CA', 5), ('CC', 3), ('CG', 2), ('CT', 5), ('GA', 6), ('GC', 4), ('GG', 3), ('GT', 5), ('TA', 8), ('TC', 6), ('TG', 5), ('TT', 8)]
 
     '''
     frequencies = defaultdict(int)
     for substring in window(genome, n_bases):
-        for neighbor in neighbors(substring, dist_max, method):
+        for neighbor in neighbors(substring, dist_max, method=method):
             frequencies[neighbor] += 1
             if reverse:
                 frequencies[reverse_complement(neighbor)] += 1
@@ -172,14 +194,12 @@ def reverse_complement(genome):
     return genome.translate(COMPLEMENTS)[::-1]
 
 
-def start_positions(genome, pattern, dist_max=0, method=hamming_distance):
+def start_positions(genome, pattern, *, dist_max=0, method=hamming_distance):
     '''
     >>> list(start_positions('GATATATGCATATACTT', 'ATAT'))
     [1, 3, 9]
     >>> genome = 'CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAAT'
-    >>> pattern = 'ATTCTGGA'
-    >>> distance = 3
-    >>> list(start_positions(genome, pattern, distance))
+    >>> list(start_positions(genome, 'ATTCTGGA', dist_max=3))
     [6, 7, 26, 27]
 
     '''
@@ -235,29 +255,6 @@ def min_skew(genome):
     skew_list = list(skew(genome))
     minimum = min(skew_list)
     yield from (i for i, v in enumerate(skew_list) if v == minimum)
-
-
-def neighbors(pattern, dist_max, method=hamming_distance):
-    '''
-    >>> sorted(neighbors('ACG', 1))
-    ['AAG', 'ACA', 'ACC', 'ACG', 'ACT', 'AGG', 'ATG', 'CCG', 'GCG', 'TCG']
-
-    '''
-    if dist_max == 0:
-        return set([pattern])
-    if len(pattern) == 1:
-        return set(BASES)
-
-    neighborhood = set()
-    head, tail = pattern[0], pattern[1:]
-    neighbors_tail = neighbors(tail, dist_max, method)
-
-    for neighbor in neighbors_tail:
-        if method(tail, neighbor) < dist_max:
-            neighborhood.update({base + neighbor for base in BASES})
-        else:
-            neighborhood.add(head + neighbor)
-    return neighborhood
 
 
 if __name__ == '__main__':
