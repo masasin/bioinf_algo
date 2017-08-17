@@ -15,7 +15,7 @@ def hamming_distance(s1, s2):
     return sum(l != r for l, r in zip(s1, s2))
 
 
-def neighbors(pattern, dist_max, *, method=hamming_distance):
+def neighbors(pattern, dist_max, *, dist_method=hamming_distance):
     if dist_max == 0:
         return set([pattern])
     if len(pattern) == 1:
@@ -23,35 +23,36 @@ def neighbors(pattern, dist_max, *, method=hamming_distance):
 
     neighborhood = set()
     head, tail = pattern[0], pattern[1:]
-    neighbors_tail = neighbors(tail, dist_max, method=method)
+    neighbors_tail = neighbors(tail, dist_max, dist_method=dist_method)
 
     for neighbor in neighbors_tail:
-        if method(tail, neighbor) < dist_max:
+        if dist_method(tail, neighbor) < dist_max:
             neighborhood.update({base + neighbor for base in BASES})
         else:
             neighborhood.add(head + neighbor)
     return neighborhood
 
 
-def pattern_count(genome, pattern, *, dist_max=0, method=hamming_distance):
-    return sum(method(pattern, substring) <= dist_max
+def pattern_count(genome, pattern, *, dist_max=0, dist_method=hamming_distance):
+    return sum(dist_method(pattern, substring) <= dist_max
                for substring in window(genome, len(pattern)))
 
 
-def kmer_counts(genome, kmer_length, *, dist_max=0, method=hamming_distance,
-                reverse=False):
+def kmer_counts(genome, kmer_length, *, dist_max=0,
+                dist_method=hamming_distance, reverse=False):
     freqs = frequencies(genome, kmer_length,
-                        dist_max=dist_max, method=method, reverse=reverse)
+                        dist_max=dist_max, dist_method=dist_method,
+                        reverse=reverse)
     counts = defaultdict(set)
     for k, v in freqs.items():
         counts[v].add(k)
     return counts
 
 
-def frequent_kmers(genome, kmer_length, *, dist_max=0, method=hamming_distance,
-                   reverse=False, min_freq=None):
-    counts = kmer_counts(genome, kmer_length, dist_max=dist_max, method=method,
-                         reverse=reverse)
+def frequent_kmers(genome, kmer_length, *, dist_max=0,
+                   dist_method=hamming_distance, reverse=False, min_freq=None):
+    counts = kmer_counts(genome, kmer_length, dist_max=dist_max,
+                         dist_method=dist_method, reverse=reverse)
 
     if max(counts) <= 1:
         return
@@ -82,11 +83,11 @@ def vectorize(frequency_dict):
             for i in range(len(BASES)**n_bases)]
 
 
-def frequencies(genome, n_bases, *, dist_max=0, method=hamming_distance,
+def frequencies(genome, n_bases, *, dist_max=0, dist_method=hamming_distance,
                 reverse=False):
     freqs = defaultdict(int)
     for substring in window(genome, n_bases):
-        for neighbor in neighbors(substring, dist_max, method=method):
+        for neighbor in neighbors(substring, dist_max, dist_method=dist_method):
             freqs[neighbor] += 1
             if reverse:
                 freqs[reverse_complement(neighbor)] += 1
@@ -97,9 +98,10 @@ def reverse_complement(genome):
     return genome.translate(COMPLEMENTS)[::-1]
 
 
-def start_positions(genome, pattern, *, dist_max=0, method=hamming_distance):
+def start_positions(genome, pattern, *, dist_max=0,
+                    dist_method=hamming_distance):
     for i, substring in enumerate(window(genome, len(pattern))):
-        if method(pattern, substring) <= dist_max:
+        if dist_method(pattern, substring) <= dist_max:
             yield i
 
 
