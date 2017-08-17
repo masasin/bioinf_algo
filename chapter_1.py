@@ -59,7 +59,8 @@ def pattern_count(genome, pattern, *, dist_max=0, method=hamming_distance):
                for substring in window(genome, len(pattern)))
 
 
-def kmer_counts(genome, kmer_length, *, dist_max=0, method=hamming_distance, reverse=False):
+def kmer_counts(genome, kmer_length, *, dist_max=0, method=hamming_distance,
+                reverse=False):
     '''
     >>> genome = 'GCGCG'
     >>> sorted(dict(kmer_counts(genome, 2)).items())
@@ -74,14 +75,16 @@ def kmer_counts(genome, kmer_length, *, dist_max=0, method=hamming_distance, rev
     True
 
     '''
-    freqs = dict_frequencies(genome, kmer_length, dist_max=dist_max, method=method, reverse=reverse)
+    freqs = dict_frequencies(genome, kmer_length,
+                             dist_max=dist_max, method=method, reverse=reverse)
     counts = defaultdict(list)
     for k, v in freqs.items():
         counts[v].append(k)
     return counts
 
 
-def frequent_kmers(genome, kmer_length, *, dist_max=0, min_freq=None, method=hamming_distance, reverse=False):
+def frequent_kmers(genome, kmer_length, *, dist_max=0, method=hamming_distance,
+                   reverse=False, min_freq=None):
     '''
     >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> kmer_length = 4
@@ -101,7 +104,8 @@ def frequent_kmers(genome, kmer_length, *, dist_max=0, min_freq=None, method=ham
     ['ACAT', 'ATGT']
 
     '''
-    counts = kmer_counts(genome, kmer_length, dist_max=dist_max, method=method, reverse=reverse)
+    counts = kmer_counts(genome, kmer_length, dist_max=dist_max, method=method,
+                         reverse=reverse)
 
     if max(counts) <= 1:
         return
@@ -165,7 +169,8 @@ def list_frequencies(genome, n_bases, *, dist_max=0, method=hamming_distance):
     return frequencies
 
 
-def dict_frequencies(genome, n_bases, *, dist_max=0, method=hamming_distance, reverse=False):
+def dict_frequencies(genome, n_bases, *, dist_max=0, method=hamming_distance,
+                     reverse=False):
     '''
     >>> genome = 'GATTACA'
     >>> sorted(dict(dict_frequencies(genome, 2)).items())
