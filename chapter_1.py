@@ -352,6 +352,57 @@ def frequent_kmers_approx(genome, kmer_length, dist_max, min_freq=None,
                                   sorted(counts, reverse=True))])
 
 
+def dict_frequencies_approx_reverse(genome, n_bases, dist_max, method=hamming_distance):
+    '''
+    >>> genome = 'GATTACA'
+    >>> sorted(dict(dict_frequencies_approx_reverse(genome, 2, 1)).items())
+    [('AA', 8), ('AC', 5), ('AG', 5), ('AT', 6), ('CA', 5), ('CC', 3), ('CG', 2), ('CT', 5), ('GA', 6), ('GC', 4), ('GG', 3), ('GT', 5), ('TA', 8), ('TC', 6), ('TG', 5), ('TT', 8)]
+
+    '''
+    frequencies = defaultdict(int)
+    for substring in window(genome, n_bases):
+        for neighbor in neighbors(substring, dist_max, method):
+            frequencies[neighbor] += 1
+            frequencies[reverse_complement(neighbor)] += 1
+    return frequencies
+
+
+def kmer_counts_approx_reverse(genome, kmer_length, dist_max, method=hamming_distance):
+    '''
+    >>> genome = 'GCGCG'
+    >>> counts = kmer_counts_approx_reverse(genome, 2, 1)
+    >>> sorted(counts) == [4, 8]
+    True
+
+    '''
+    freqs = dict_frequencies_approx_reverse(genome, kmer_length, dist_max, method)
+    counts = defaultdict(list)
+    for k, v in freqs.items():
+        counts[v].append(k)
+    return counts
+
+
+def frequent_kmers_approx_reverse(genome, kmer_length, dist_max, min_freq=None,
+                                  method=hamming_distance):
+    '''
+    >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
+    >>> kmer_length = 4
+    >>> sorted(frequent_kmers_approx_reverse(genome, kmer_length, 1))
+    ['ACAT', 'ATGT']
+
+    '''
+    counts = kmer_counts_approx_reverse(genome, kmer_length, dist_max, method)
+
+    if max(counts) <= 1:
+        return
+    elif min_freq is None:
+        yield from counts[max(counts)]
+    else:
+        yield from it.chain.from_iterable([counts[i]
+            for i in it.takewhile(lambda i: i >= min_freq,
+                                  sorted(counts, reverse=True))])
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
