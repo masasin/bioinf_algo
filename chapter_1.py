@@ -332,24 +332,24 @@ def frequent_kmers_approx(genome, kmer_length, dist_max, min_freq=None,
     '''
     >>> genome = 'ACGTTGCATGTCGCATGATGCATGAGAGCT'
     >>> kmer_length = 4
-    >>> sorted(frequent_kmers(genome, kmer_length))
-    ['CATG', 'GCAT']
-    >>> sorted(frequent_kmers(genome, kmer_length, min_freq=2))
-    ['ATGA', 'CATG', 'GCAT', 'TGCA']
-    >>> frequent_kmers('GCGAT', 3)
+    >>> sorted(frequent_kmers_approx(genome, kmer_length, 1))
+    ['ATGC', 'ATGT', 'GATG']
+    >>> sorted(frequent_kmers_approx(genome, kmer_length, 1, min_freq=4))
+    ['AATG', 'ACAT', 'AGCA', 'ATGA', 'ATGC', 'ATGG', 'ATGT', 'CATG', 'CATT', 'CGTG', 'CTTG', 'GATG', 'GCGT', 'GGAT', 'TATG', 'TCAT', 'TGAA', 'TGCT']
+    >>> sorted(frequent_kmers_approx('GCGAT', 4, 1))
     []
 
     '''
     counts = kmer_counts_approx(genome, kmer_length, dist_max, method)
 
     if max(counts) <= 1:
-        return []
+        return
     elif min_freq is None:
-        return counts[max(counts)]
+        yield from counts[max(counts)]
     else:
-        return list(it.chain.from_iterable([counts[i]
+        yield from it.chain.from_iterable([counts[i]
             for i in it.takewhile(lambda i: i >= min_freq,
-                                  sorted(counts, reverse=True))]))
+                                  sorted(counts, reverse=True))])
 
 
 if __name__ == '__main__':
