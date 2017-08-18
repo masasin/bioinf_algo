@@ -1,7 +1,6 @@
 from functools import partial
+import math
 import random
-
-import numpy as np
 
 import chapter_1 as c
 
@@ -202,7 +201,8 @@ class TestProbabilities:
         assert f('01', min_freq=2, exact=True) == 1/16
         assert f('11', min_freq=2, exact=True) == 3/16
         assert f('11', min_freq=2) == 1/16
-        assert np.isclose(c.prob_pattern('ACTAT', 30, min_freq=3), 7.599e-7)
+        assert math.isclose(c.prob_pattern('ACTAT', 30, min_freq=3), 7.599e-7,
+                            rel_tol=1e-5, abs_tol=1e-8)
 
     def test_prob_kmer(self):
         assert c.prob_kmer(9, 500, min_freq=3) == 17861900 / 68719476736
