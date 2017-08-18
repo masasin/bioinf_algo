@@ -3,6 +3,7 @@ from functools import lru_cache
 import itertools as it
 
 import baseconv
+from scipy.misc import comb
 
 
 BASES = 'ACGT'
@@ -137,3 +138,30 @@ def min_skew(genome):
     skew_list = list(skew(genome))
     minimum = min(skew_list)
     yield from (i for i, v in enumerate(skew_list) if v == minimum)
+
+
+def prob_pattern(pattern, length, *, min_freq=1, bases=BASES, exact=False):
+    if not exact:
+        return prob_kmer(len(pattern), length, min_freq=min_freq,
+                         n_bases=len(bases), single=True)
+
+    n_success = sum(pattern_count(string, pattern) >= min_freq
+                    for string in it.product(bases, repeat=length))
+    n_combos = len(bases)**length
+    return n_success / n_combos
+
+
+def prob_kmer(kmer_length, length, *, min_freq=1, n_bases=len(BASES),
+              single=False):
+    n_single = comb(length - min_freq * (kmer_length - 1), min_freq)
+    n_combos = n_bases**(min_freq * kmer_length)
+    return n_single / n_combos * (n_bases ** kmer_length if not single else 1)
+    
+
+def overlap_corr(s1, s2):
+    assert len(s1) == len(s2), 'Input strings should be of equal length.'
+    yield from (s1[i:] == s2[:-i] for i in range(len(s1)))
+
+
+def overlap_corr_freq(s1, s2):
+    return sum(c * 0.5**i for i, c in enumerate(overlap_corr(s1, s2)))

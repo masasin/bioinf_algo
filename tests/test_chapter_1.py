@@ -1,6 +1,8 @@
 from functools import partial
 import random
 
+import numpy as np
+
 import chapter_1 as c
 
 
@@ -190,3 +192,31 @@ class TestClumpers:
 
     def test_windowed(self):
         assert self.f(window_size=25, min_freq=3) == {'TGCA'}
+
+
+class TestProbabilities:
+    def test_prob_pattern(self):
+        f = partial(c.prob_pattern, length=4, bases='01')
+        assert f('01', exact=True) == 11/16
+        assert f('11', exact=True) == 8/16
+        assert f('01', min_freq=2, exact=True) == 1/16
+        assert f('11', min_freq=2, exact=True) == 3/16
+        assert f('11', min_freq=2) == 1/16
+        assert np.isclose(c.prob_pattern('ACTAT', 30, min_freq=3), 7.599e-7)
+
+    def test_prob_kmer(self):
+        assert c.prob_kmer(9, 500, min_freq=3) == 17861900 / 68719476736
+
+
+class TestOverlapCorrelation:
+    def setup(self):
+        self.s1 = '011011'
+        self.s2 = '110110'
+
+    def test_overlap_corr(self):
+        assert (list(c.overlap_corr(self.s1, self.s2))
+                == [False, True, False, False, True, True])
+
+
+    def test_overlap_corr_freq(self):
+        assert c.overlap_corr_freq(self.s1, self.s2) == 19/32
